@@ -1,12 +1,16 @@
 import os
+import argparse
 from dotenv import load_dotenv
 from openai import OpenAI
 
 
 
 
-
 def main() -> None:
+    parser = argparse.ArgumentParser(description="bootdev ai chatbot")
+    parser.add_argument("user_prompt", type=str, help="Prompt to send to LLM")
+    args = parser.parse_args()
+
 
     load_dotenv()
     api_key = os.environ.get("OPENROUTER_API_KEY")
@@ -24,16 +28,20 @@ def main() -> None:
         messages=[
             {
                 "role": "user",
-                "content": "Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum."
+                "content": args.user_prompt
             }
         ]
     )
 
     response_text = response.choices[0].message.content
-    prompt_tokens = response.usage.prompt_tokens # pyright: ignore[reportOptionalMemberAccess]
-    completion_tokens = response.usage.completion_tokens # pyright: ignore[reportOptionalMemberAccess]
 
-    print("\nuser prompt: Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.")
+    if not response.usage:
+        raise RuntimeError("API response appears to be malformed")
+    
+    prompt_tokens = response.usage.prompt_tokens
+    completion_tokens = response.usage.completion_tokens 
+
+    print(f"\nuser prompt:{args.user_prompt}")
     print(f"\nPrompt tokens: {prompt_tokens}")
 
     print(f"Response tokens: {completion_tokens}")
