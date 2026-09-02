@@ -30,7 +30,13 @@ def main() -> None:
     )
 
     response_text = response.choices[0].message.content
+    prompt_tokens = response.usage.prompt_tokens # pyright: ignore[reportOptionalMemberAccess]
+    completion_tokens = response.usage.completion_tokens # pyright: ignore[reportOptionalMemberAccess]
 
+    print("\nuser prompt: Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.")
+    print(f"\nPrompt tokens: {prompt_tokens}")
+
+    print(f"Response tokens: {completion_tokens}")
     print(f"\nResponse:\n{response_text}\n")
     
 
