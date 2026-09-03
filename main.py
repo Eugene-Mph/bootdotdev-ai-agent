@@ -23,14 +23,20 @@ def main() -> None:
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key,
     )
+
+    messages = [
+        {"role": "user", "content": args.user_prompt},
+    ]
+
+    generate_content(client, messages)
+    
+    
+    
+def generate_content(client: OpenAI, messages: list) -> None:
+
     response = client.chat.completions.create(
         model="openrouter/free",
-        messages=[
-            {
-                "role": "user",
-                "content": args.user_prompt
-            }
-        ]
+        messages=messages,
     )
 
     response_text = response.choices[0].message.content
@@ -41,13 +47,11 @@ def main() -> None:
     prompt_tokens = response.usage.prompt_tokens
     completion_tokens = response.usage.completion_tokens 
 
-    print(f"\nuser prompt:{args.user_prompt}")
+    # print(f"\nuser prompt:{args.user_prompt}")
     print(f"\nPrompt tokens: {prompt_tokens}")
 
     print(f"Response tokens: {completion_tokens}")
     print(f"\nResponse:\n{response_text}\n")
-    
-
 
 if __name__ == "__main__":
     main()
