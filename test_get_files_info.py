@@ -7,22 +7,26 @@ from functions.get_files_info import get_files_info
 
 
 def test() -> None:
+
     result = get_files_info("calculator")
+    print("Result for current directory")
     print(result)
 
-    # test if a given argument is in the scope of the working directory
+
+
+    result = get_files_info("calculator", "pkg")
+    print("Result for pkg directory")
+    print(result)
 
 
     result = get_files_info("calculator", "/bin")
-    print(result)
-
-
-    result = get_files_info("calculator", "../")
+    print("result for /bin")
     print(result)
 
 
     
-    result = get_files_info("calculator", "main.py")
+    result = get_files_info("calculator", "../")
+    print("result for ../")
     print(result)
 
 
