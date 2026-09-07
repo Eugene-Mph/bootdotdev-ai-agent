@@ -47,4 +47,4 @@ schema_get_file_content = {
         },
         "required" : ["file_path"]
     },
-},
+}

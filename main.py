@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 from prompts import system_prompt
-from call_function import available_functions
+from call_function import available_functions, call_function
 
 
 
@@ -34,51 +34,53 @@ def main() -> None:
         {"role": "user", "content": args.user_prompt},
     ]
 
-    response = generate_content(client, messages)
 
-    verbose_output(response, args)
+    if args.verbose:
+        print(f"User prompt: {args.user_prompt}\n")
 
+    generate_content(client, messages, args.verbose)
+
+
+       
+    
+def generate_content(client: OpenAI, messages: list, verbose: bool) -> None:
+
+    response = client.chat.completions.create(
+        model="openrouter/free",
+        messages=messages,
+        tools=available_functions,  
+    )
+
+    if not response.usage:
+        raise RuntimeError("API response appears to be malformed")
+
+    if verbose:
+        print(f"Prompt tokens: {response.usage.prompt_tokens}")
+        print(f"Response tokens: {response.usage.prompt_tokens}")
+
+
+    
     message = response.choices[0].message
-
+    
     if not message.tool_calls:
         print(f"Response:\n{message.content}")
+        print(message.content)
         return
     
-  
+    
     for tool_call in message.tool_calls:
         if tool_call.type != "function":
             continue
         function_args = json.loads(tool_call.function.arguments or "{}") 
         print(f"Calling function: {tool_call.function.name}({function_args})") 
 
-       
-    
-def generate_content(client: OpenAI, messages: list):
+        result_message = call_function(tool_call)
+        if not result_message["content"]:
+            raise RuntimeError("API malformed tool response")
 
-    response = client.chat.completions.create(
-        model="openrouter/free",
-        messages=messages,
-        tools=available_functions,  # type: ignore
-    )
+        if verbose:
+            print(f"-> {result_message["content"]}")
 
-    return response
-
-def verbose_output(response, flags) -> None:
-
-    response_text = response.choices[0].message.content
-
-    if not response.usage:
-        raise RuntimeError("API response appears to be malformed")
-
-    if flags.verbose:
-        prompt_tokens = response.usage.prompt_tokens
-        completion_tokens = response.usage.completion_tokens 
-
-        print(f"User prompt: {flags.user_prompt}")
-        print(f"Prompt tokens: {prompt_tokens}")
-
-        print(f"Response tokens: {completion_tokens}")
-    print(f"Response:{response_text}")
 
 
 
