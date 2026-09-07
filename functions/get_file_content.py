@@ -34,16 +34,17 @@ schema_get_file_content = {
     "type": "function",
     "function": {
         "name": "get_file_content",
-        "description": "Read the text content of the specified file relative to the working directory, proving a string of the file content",
+        "description": f"Read the text content (at most {config.MAX_CHARS} characters) of the specified file within the working directory",
         "parameters": {
             "type" : "object",
             "properties" : {
                 "file_path" : {
                     "type": "string",
-                    "description" : "The path of the file to read from",
+                    "description" : "The path of the file to read from within the working directory",
                 },
                 
-            }
-        }
-    }
-}
+            },
+        },
+        "required" : ["file_path"]
+    },
+},
