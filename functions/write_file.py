@@ -33,7 +33,7 @@ schema_write_file = {
     "type" : "function",
     "function" : {
         "name" : "write_file",
-        "description": "Writes values provided to the funtcion in the specified file relative to the working directory",
+        "description": "Writes text provided to the funtcion in the specified file relative to the working directory (overwrites the file if it exists)",
         "parameters" : {
             "type" : "object",
             "properties" : {
@@ -46,6 +46,7 @@ schema_write_file = {
                     "description" : "The values to be written inside the given file"
                 },
             }, 
-        },
+        }, 
+        "required" : ["file_path", "content"]
     }, 
 }
