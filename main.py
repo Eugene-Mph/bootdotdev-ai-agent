@@ -1,11 +1,14 @@
 import os
 import argparse
 import json
+import sys
+
 from dotenv import load_dotenv
 from openai import OpenAI
 
 from prompts import system_prompt
 from call_function import available_functions, call_function
+from config import MAX_ITERATIONS
 
 
 
@@ -38,12 +41,23 @@ def main() -> None:
     if args.verbose:
         print(f"User prompt: {args.user_prompt}\n")
 
-    generate_content(client, messages, args.verbose)
+    for _ in range(MAX_ITERATIONS):
+        try:
+            agent_response = generate_content(client, messages, args.verbose)
+
+            if agent_response:
+                print(f"Final Response:\n{agent_response}")
+                return
+        except Exception as err:
+            print(f"Error in generate content: {err}")
+
+    print(f"Maxium iterations ({MAX_ITERATIONS}) reached")
+    sys.exit(1)
 
 
        
     
-def generate_content(client: OpenAI, messages: list, verbose: bool) -> None:
+def generate_content(client: OpenAI, messages: list, verbose: bool) -> str | None:
 
     response = client.chat.completions.create(
         model="openrouter/free",
@@ -61,10 +75,11 @@ def generate_content(client: OpenAI, messages: list, verbose: bool) -> None:
 
     
     message = response.choices[0].message
+    messages.append(message)
     
     if not message.tool_calls:
-        print(f"Response:\n{message.content}")
-        print(message.content)
+        # print(f"Response:\n{message.content}")
+        # print(message.content)
         return
     
     
@@ -72,14 +87,19 @@ def generate_content(client: OpenAI, messages: list, verbose: bool) -> None:
         if tool_call.type != "function":
             continue
         function_args = json.loads(tool_call.function.arguments or "{}") 
-        print(f"Calling function: {tool_call.function.name}({function_args})") 
+        # print(f"Calling function: {tool_call.function.name}({function_args})") 
 
         result_message = call_function(tool_call)
+        
+
         if not result_message["content"]:
-            raise RuntimeError("API malformed tool response")
+            raise RuntimeError(f"Empty function response for {tool_call.function.name}")
 
         if verbose:
             print(f"-> {result_message["content"]}")
+        messages.append(result_message)
+
+    return None
 
 
 

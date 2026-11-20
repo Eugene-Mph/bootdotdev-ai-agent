@@ -4,6 +4,7 @@ import json
 from collections.abc import Callable
 from typing import Any
 
+from config import WORKING_DIR
 from functions.get_files_info import schema_get_files_info, get_files_info
 from functions.get_file_content import schema_get_file_content, get_file_content
 from functions.write_file import schema_write_file, write_file
@@ -41,7 +42,7 @@ def call_function(tool_call, verbose: bool = False) -> dict [str, Any]:
             "content" : f"Error: Unknown function {function_name}",
         }
 
-    function_args["working_directory"] = "./calculator"
+    function_args["working_directory"] = WORKING_DIR
 
     result = function_map[function_name](**function_args)
     return {
